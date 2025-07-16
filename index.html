@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>AI Chatbot - Asisten Virtual Cerdas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- PWA Meta Tags untuk Android -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AI Chatbot">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="AI Chatbot - Asisten Virtual Cerdas Anda">
+    <meta property="og:description" content="AI Chatbot adalah asisten virtual cerdas yang dapat membantu Anda dalam berbagai hal. Dibuat dengan HTML, CSS, dan JavaScript murni.">
+    <meta property="og:image" content="https://rizky598.github.io/Ai/profile_pic.jpg">
+    <meta property="og:url" content="https://rizky598.github.io/Ai">
+    <meta property="og:type" content="website">
+    
+    <!-- Prevent zoom on input focus for iOS -->
+    <meta name="format-detection" content="telephone=no">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <!-- Video Background -->
+    <video id="background-video" autoplay muted loop playsinline>
+        <source src="background_video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Audio Control Button -->
+    <button id="audio-toggle" class="audio-control" title="Toggle Audio">
+        <i class="fas fa-volume-mute"></i>
+    </button>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="profile-pic">
+                        <img src="profile_pic.jpg" alt="Profile Picture">
+                    </div>
+                    <div class="logo-text">
+                        <i class="fas fa-robot"></i>
+                        <h1>AI Chatbot</h1>
+                    </div>
+                </div>
+                <div class="header-subtitle">
+                    Asisten Virtual Cerdas Anda
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="chat-controls">
+                    <div class="mode-selector">
+                        <label for="ai-mode">
+                            <i class="fas fa-cog"></i>
+                            Mode AI:
+                        </label>
+                        <select id="ai-mode">
+                            <option value="friendly">🤗 Ramah</option>
+                            <option value="professional">💼 Profesional</option>
+                            <option value="creative">🎨 Kreatif</option>
+                            <option value="casual">😎 Santai</option>
+                            <option value="technical">🔧 Teknis</option>
+                        </select>
+                    </div>
+                    <div class="chat-actions">
+                        <button id="clear-chat" class="btn-secondary">
+                            <i class="fas fa-trash"></i>
+                            Hapus Chat
+                        </button>
+                        <button id="export-chat" class="btn-secondary">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-box" id="chat-box">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>Selamat datang di AI Chatbot!</h3>
+                        <p>Saya siap membantu Anda. Silakan ketik pesan untuk memulai percakapan.</p>
+                        <div class="quick-actions">
+                            <a href="https://chat.whatsapp.com/Jmbs0K52j3fB4FOP5wViWX" target="_blank" class="quick-btn">
+                                <i class="fab fa-whatsapp"></i>
+                                Grup WhatsApp
+                            </a>
+                            <a href="https://wa.me/6283850540570" target="_blank" class="quick-btn">
+                                <i class="fab fa-whatsapp"></i>
+                                Chat Admin
+                            </a>
+                            <a href="https://www.tiktok.com/@rizky.cyber" target="_blank" class="quick-btn">
+                                <i class="fab fa-tiktok"></i>
+                                Akun TikTok
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="typing-text">AI sedang mengetik...</span>
+                </div>
+
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="user-input" placeholder="Ketik pesan Anda di sini..." maxlength="6000" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <div class="input-actions">
+                            <button id="voice-input" class="input-btn" title="Voice Input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="send-button" class="btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="input-info">
+                        <span class="char-count">0/6000</span>
+                        <span class="status" id="status">Siap untuk chat dengan AI sungguhan</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 AI Chatbot. Dibuat dengan ❤️ untuk GitHub Pages</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showAbout()">Tentang</a>
+                    <a href="#" onclick="showHelp()">Bantuan</a>
+                    <a href="https://github.com" target="_blank">GitHub</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal untuk About -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-robot"></i> Tentang AI Chatbot</h2>
+            <p>AI Chatbot adalah asisten virtual cerdas yang dapat membantu Anda dalam berbagai hal. Aplikasi ini dibuat menggunakan HTML, CSS, dan JavaScript murni, sehingga dapat dijalankan langsung di browser tanpa memerlukan server.</p>
+            <h3>Fitur:</h3>
+            <ul>
+                <li>Multiple AI personality modes</li>
+                <li>Responsive design untuk semua perangkat</li>
+                <li>Export chat history</li>
+                <li>Voice input simulation</li>
+                <li>Real-time typing indicator</li>
+                <li>Optimized untuk Android dan iOS</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal untuk Help -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-question-circle"></i> Bantuan</h2>
+            <h3>Cara Menggunakan:</h3>
+            <ol>
+                <li>Pilih mode AI yang diinginkan dari dropdown</li>
+                <li>Ketik pesan Anda di kolom input</li>
+                <li>Tekan Enter atau klik tombol kirim</li>
+                <li>AI akan merespons sesuai dengan mode yang dipilih</li>
+            </ol>
+            <h3>Tips Mobile:</h3>
+            <ul>
+                <li>Gunakan orientasi portrait untuk pengalaman terbaik</li>
+                <li>Area chat memiliki scroll sendiri untuk navigasi mudah</li>
+                <li>Semua tombol sudah dioptimalkan untuk sentuhan</li>
+                <li>Input field mencegah zoom otomatis di iOS</li>
+            </ul>
+            <h3>Tips Umum:</h3>
+            <ul>
+                <li>Gunakan mode "Profesional" untuk pertanyaan bisnis</li>
+                <li>Mode "Kreatif" cocok untuk brainstorming</li>
+                <li>Mode "Teknis" untuk pertanyaan programming</li>
+                <li>Klik "Export" untuk menyimpan percakapan</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    
+    <!-- Additional mobile optimizations -->
+    <script>
+        // Prevent zoom on double tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener("touchend", function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Prevent pull-to-refresh on mobile
+        document.body.addEventListener("touchstart", e => {
+            if (e.touches.length === 1 && e.touches[0].clientY <= 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.body.addEventListener("touchmove", e => {
+            if (e.touches.length === 1 && e.touches[0].clientY <= 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Auto-resize chat container based on viewport
+        function adjustChatHeight() {
+            const chatContainer = document.querySelector(".chat-container");
+            const viewportHeight = window.innerHeight;
+            const headerHeight = document.querySelector(".header").offsetHeight;
+            const footerHeight = document.querySelector(".footer").offsetHeight;
+            const availableHeight = viewportHeight - headerHeight - footerHeight - 60; // 60px for margins
+            
+            if (window.innerWidth <= 768) {
+                chatContainer.style.height = Math.min(availableHeight, viewportHeight * 0.75) + "px";
+            }
+        }
+        
+        window.addEventListener("resize", adjustChatHeight);
+        window.addEventListener("orientationchange", () => {
+            setTimeout(adjustChatHeight, 100);
+        });
+        
+        // Initial adjustment
+        document.addEventListener("DOMContentLoaded", adjustChatHeight);
+        
+        // Handle virtual keyboard on mobile devices
+        function handleVirtualKeyboard() {
+            const inputContainer = document.querySelector('.input-container');
+            const chatContainer = document.querySelector('.chat-container');
+            const userInput = document.getElementById('user-input');
+            
+            // Store original positions
+            let originalInputBottom = null;
+            let originalChatHeight = null;
+            
+            function adjustForKeyboard() {
+                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                const windowHeight = window.innerHeight;
+                const keyboardHeight = windowHeight - viewportHeight;
+                
+                if (keyboardHeight > 100) { // Keyboard is visible
+                    if (!originalInputBottom) {
+                        originalInputBottom = inputContainer.style.bottom || '0px';
+                        originalChatHeight = chatContainer.style.height;
+                    }
+                    
+                    // Adjust input container position
+                    inputContainer.style.position = 'fixed';
+                    inputContainer.style.bottom = '10px';
+                    inputContainer.style.left = '10px';
+                    inputContainer.style.right = '10px';
+                    inputContainer.style.zIndex = '1001';
+                    
+                    // Adjust chat container height
+                    const inputHeight = inputContainer.offsetHeight;
+                    const availableHeight = viewportHeight - inputHeight - 20;
+                    chatContainer.style.height = Math.max(availableHeight - 200, 200) + 'px';
+                    chatContainer.style.marginBottom = (inputHeight + 20) + 'px';
+                    
+                } else { // Keyboard is hidden
+                    if (originalInputBottom !== null) {
+                        inputContainer.style.position = '';
+                        inputContainer.style.bottom = originalInputBottom;
+                        inputContainer.style.left = '';
+                        inputContainer.style.right = '';
+                        inputContainer.style.zIndex = '';
+                        
+                        chatContainer.style.height = originalChatHeight || '';
+                        chatContainer.style.marginBottom = '';
+                        
+                        originalInputBottom = null;
+                        originalChatHeight = null;
+                    }
+                }
+            }
+            
+            // Listen for viewport changes (keyboard show/hide)
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', adjustForKeyboard);
+            } else {
+                // Fallback for older browsers
+                window.addEventListener('resize', adjustForKeyboard);
+            }
+            
+            // Handle input focus/blur
+            userInput.addEventListener('focus', () => {
+                setTimeout(adjustForKeyboard, 300);
+            });
+            
+            userInput.addEventListener('blur', () => {
+                setTimeout(adjustForKeyboard, 300);
+            });
+        }
+        
+        // Initialize keyboard handling
+        document.addEventListener("DOMContentLoaded", handleVirtualKeyboard);
+    </script>
+</body>
+</html>
+
