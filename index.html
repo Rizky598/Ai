@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.6, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>AI Chatbot - Asisten Virtual Cerdas</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -123,7 +123,7 @@
 
                 <div class="input-container">
                     <div class="input-wrapper">
-                        <input type="text" id="user-input" placeholder="Ketik pesan Anda di sini..." maxlength="500" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <input type="text" id="user-input" placeholder="Ketik pesan Anda di sini..." maxlength="6000" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <div class="input-actions">
                             <button id="voice-input" class="input-btn" title="Voice Input">
                                 <i class="fas fa-microphone"></i>
@@ -134,7 +134,7 @@
                         </div>
                     </div>
                     <div class="input-info">
-                        <span class="char-count">0/500</span>
+                        <span class="char-count">0/6000</span>
                         <span class="status" id="status">Siap untuk chat</span>
                     </div>
                 </div>
@@ -230,7 +230,7 @@
         // Auto-resize chat container based on viewport
         function adjustChatHeight() {
             const chatContainer = document.querySelector(".chat-container");
-            const viewportHeight = window.innerHeight;
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
             const headerHeight = document.querySelector(".header").offsetHeight;
             const footerHeight = document.querySelector(".footer").offsetHeight;
             const availableHeight = viewportHeight - headerHeight - footerHeight - 60; // 60px for margins
@@ -240,13 +240,58 @@
             }
         }
         
+        // Handle virtual keyboard on mobile
+        function handleVirtualKeyboard() {
+            if (window.visualViewport) {
+                const viewport = window.visualViewport;
+                
+                function viewportHandler() {
+                    const currentHeight = viewport.height;
+                    const fullHeight = window.screen.height;
+                    const keyboardHeight = fullHeight - currentHeight - viewport.offsetTop;
+                    
+                    if (keyboardHeight > 150) { // Keyboard is likely open
+                        document.body.style.height = currentHeight + 'px';
+                        document.body.style.overflow = 'hidden';
+                        
+                        // Adjust chat container for keyboard
+                        const chatContainer = document.querySelector(".chat-container");
+                        const inputContainer = document.querySelector(".input-container");
+                        const headerHeight = document.querySelector(".header").offsetHeight;
+                        
+                        if (chatContainer && inputContainer) {
+                            const availableHeight = currentHeight - headerHeight - inputContainer.offsetHeight - 40;
+                            chatContainer.style.height = availableHeight + "px";
+                            
+                            // Scroll to bottom of chat when keyboard opens
+                            const chatBox = document.querySelector(".chat-box");
+                            if (chatBox) {
+                                setTimeout(() => {
+                                    chatBox.scrollTop = chatBox.scrollHeight;
+                                }, 100);
+                            }
+                        }
+                    } else { // Keyboard is closed
+                        document.body.style.height = '';
+                        document.body.style.overflow = '';
+                        adjustChatHeight();
+                    }
+                }
+                
+                viewport.addEventListener('resize', viewportHandler);
+            }
+        }
+        
         window.addEventListener("resize", adjustChatHeight);
         window.addEventListener("orientationchange", () => {
             setTimeout(adjustChatHeight, 100);
         });
         
         // Initial adjustment
-        document.addEventListener("DOMContentLoaded", adjustChatHeight);
+        document.addEventListener("DOMContentLoaded", () => {
+            adjustChatHeight();
+            handleVirtualKeyboard();
+        });
     </script>
 </body>
 </html>

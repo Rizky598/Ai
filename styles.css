@@ -66,6 +66,9 @@ body {
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
+    /* Prevent layout shift on mobile keyboard */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for better mobile support */
 }
 
 /* Overlay untuk meningkatkan kontras */
@@ -443,6 +446,9 @@ body::before {
     background: rgba(255, 255, 255, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
+    /* Prevent input from moving when keyboard appears */
+    position: relative;
+    z-index: 100;
 }
 
 .input-wrapper {

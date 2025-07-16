@@ -17,7 +17,7 @@ class AIChatbot {
         this.isTyping = false;
         
         // Google AI API Configuration
-        this.googleAIApiKey = "AIzaSyDS1XSeLKAJ93a4aWBC9knChDzPNnKtw3A";
+        this.googleAIApiKey = "AIzaSyAcIVehNGo2jN-SlZv8P7Ss0-sPfxe9VCw";
         this.apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
         
         this.initializeEventListeners();
@@ -31,75 +31,51 @@ class AIChatbot {
         const backgroundVideo = document.getElementById('background-video');
         
         if (audioToggle && backgroundVideo) {
-            // Remove any existing event listeners to prevent duplicates
-            const newAudioToggle = audioToggle.cloneNode(true);
-            audioToggle.parentNode.replaceChild(newAudioToggle, audioToggle);
-            
             // Set initial state
-            newAudioToggle.classList.add('muted');
-            newAudioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            newAudioToggle.title = 'Hidupkan Audio';
+            audioToggle.classList.add('muted');
+            audioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            audioToggle.title = 'Hidupkan Audio';
             
-            // Add debouncing to prevent multiple rapid clicks
-            let isProcessing = false;
+            // Remove any existing event listeners
+            audioToggle.replaceWith(audioToggle.cloneNode(true));
+            const newAudioToggle = document.getElementById('audio-toggle');
             
-            newAudioToggle.addEventListener('click', async (e) => {
+            newAudioToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Prevent multiple rapid clicks
-                if (isProcessing) return;
-                isProcessing = true;
+                // Add visual feedback immediately
+                newAudioToggle.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    newAudioToggle.style.transform = '';
+                }, 150);
                 
-                try {
-                    // Wait for video to be ready
-                    if (backgroundVideo.readyState < 2) {
-                        await new Promise((resolve) => {
-                            backgroundVideo.addEventListener('loadeddata', resolve, { once: true });
+                if (backgroundVideo.muted) {
+                    // Unmute the video
+                    backgroundVideo.muted = false;
+                    newAudioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    newAudioToggle.classList.remove('muted');
+                    newAudioToggle.title = 'Matikan Audio';
+                    
+                    // Ensure video is playing
+                    const playPromise = backgroundVideo.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            console.log('Video playing with audio');
+                            this.updateStatus('Audio dihidupkan');
+                        }).catch(error => {
+                            console.log('Video play failed:', error);
+                            this.updateStatus('Audio gagal dihidupkan');
                         });
                     }
+                } else {
+                    // Mute the video
+                    backgroundVideo.muted = true;
+                    newAudioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    newAudioToggle.classList.add('muted');
+                    newAudioToggle.title = 'Hidupkan Audio';
                     
-                    if (backgroundVideo.muted) {
-                        // Unmute the video
-                        backgroundVideo.muted = false;
-                        newAudioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-                        newAudioToggle.classList.remove('muted');
-                        newAudioToggle.title = 'Matikan Audio';
-                        
-                        // Ensure video is playing
-                        if (backgroundVideo.paused) {
-                            try {
-                                await backgroundVideo.play();
-                            } catch (playError) {
-                                console.log('Video play failed:', playError);
-                                // If play fails, revert the changes
-                                backgroundVideo.muted = true;
-                                newAudioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                                newAudioToggle.classList.add('muted');
-                                newAudioToggle.title = 'Hidupkan Audio';
-                                this.updateStatus('Audio tidak dapat dihidupkan - browser memblokir autoplay');
-                                return;
-                            }
-                        }
-                        
-                        this.updateStatus('Audio dihidupkan');
-                    } else {
-                        // Mute the video
-                        backgroundVideo.muted = true;
-                        newAudioToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                        newAudioToggle.classList.add('muted');
-                        newAudioToggle.title = 'Hidupkan Audio';
-                        
-                        this.updateStatus('Audio dimatikan');
-                    }
-                } catch (error) {
-                    console.error('Audio toggle error:', error);
-                    this.updateStatus('Terjadi kesalahan saat mengubah audio');
-                } finally {
-                    // Reset processing flag after a short delay
-                    setTimeout(() => {
-                        isProcessing = false;
-                    }, 500);
+                    this.updateStatus('Audio dimatikan');
                 }
             });
             
@@ -108,33 +84,17 @@ class AIChatbot {
                 console.log('Video loaded successfully');
             });
             
-            backgroundVideo.addEventListener('canplay', () => {
-                console.log('Video can start playing');
-            });
-            
             backgroundVideo.addEventListener('error', (e) => {
                 console.error('Video error:', e);
                 newAudioToggle.style.display = 'none'; // Hide button if video fails
             });
             
-            // Handle browser autoplay policy
-            backgroundVideo.addEventListener('play', () => {
-                if (!backgroundVideo.muted) {
-                    newAudioToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-                    newAudioToggle.classList.remove('muted');
-                    newAudioToggle.title = 'Matikan Audio';
-                }
+            // Handle autoplay policy
+            backgroundVideo.addEventListener('canplay', () => {
+                backgroundVideo.play().catch(error => {
+                    console.log('Autoplay prevented:', error);
+                });
             });
-            
-            backgroundVideo.addEventListener('pause', () => {
-                if (!backgroundVideo.muted) {
-                    // Video paused but not muted, try to resume
-                    backgroundVideo.play().catch(error => {
-                        console.log('Auto-resume failed:', error);
-                    });
-                }
-            });
-            
         } else {
             console.error('Audio toggle button or background video not found');
         }
@@ -264,10 +224,10 @@ class AIChatbot {
                 }]
             }],
             generationConfig: {
-                temperature: 0.9, // Increased for more creativity/less deterministic responses
-                topK: 50, // Increased for more diverse responses
-                topP: 0.98, // Increased for more diverse responses
-                maxOutputTokens: 2048, // Increased output length
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 1024,
             },
             safetySettings: [
                 {
@@ -450,43 +410,30 @@ class AIChatbot {
         const typeInterval = setInterval(() => {
             this.userInput.value += randomMessage[i];
             i++;
-            if (i >= randomMessage.length)     updateStatus(message) {
-        const statusText = `<i class="fas fa-circle" style="color: #4CAF50; font-size: 0.6rem;"></i> ${message}`;
-        if (this.statusDiv) {
-            this.statusDiv.innerHTML = statusText;
-        }
-    }
-
-    updateInputHeader() {
-        const currentModeElement = document.getElementById("current-mode");
-        const currentTimeElement = document.getElementById("current-time");
-        const sessionIdElement = document.getElementById("session-id");
-
-        if (currentModeElement) {
-            currentModeElement.textContent = this.getModeDisplayName().replace(/\s*\S+$/, ""); // Remove emoji and keep only text
-        }
-        if (currentTimeElement) {
-            currentTimeElement.textContent = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-        }
-        if (sessionIdElement) {
-            sessionIdElement.textContent = `Session: ${this.sessionId.slice(-8)}`;
-        }
+            if (i >= randomMessage.length) {
+                clearInterval(typeInterval);
+            }
+        }, 50);
+        
+        this.updateStatus("Voice input disimulasikan");
     }
 }
 
 // Global functions for modals
 function showAbout() {
-    document.getElementById("about-modal").style.display = "block";
+    document.getElementById('about-modal').style.display = 'block';
 }
 
 function showHelp() {
-    document.getElementById("help-modal").style.display = "block";
+    document.getElementById('help-modal').style.display = 'block';
 }
 
 // Initialize chatbot when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
     new AIChatbot();
-}); some fun easter eggs
+});
+
+// Add some fun easter eggs
 document.addEventListener('keydown', (e) => {
     // Konami code: ↑↑↓↓←→←→BA
     const konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
