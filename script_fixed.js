@@ -1,4 +1,4 @@
-// AI Chatbot JavaScript dengan Free Public AI API dan Memori Percakapan
+// AI Chatbot JavaScript dengan Autores Bot API dan Memori Percakapan
 class AIChatbot {
     constructor() {
         this.chatBox = document.getElementById("chat-box");
@@ -16,27 +16,9 @@ class AIChatbot {
         this.chatHistory = [];
         this.isTyping = false;
         
-        // Free AI API Configuration - Using multiple fallback APIs
-        this.apiEndpoints = [
-            {
-                name: "Hugging Face",
-                url: "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
-                headers: {
-                    "Authorization": "Bearer hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // Free tier
-                    "Content-Type": "application/json"
-                },
-                format: "huggingface"
-            },
-            {
-                name: "AI/ML API",
-                url: "https://api.aimlapi.com/chat/completions",
-                headers: {
-                    "Authorization": "Bearer free-trial-key",
-                    "Content-Type": "application/json"
-                },
-                format: "openai"
-            }
-        ];
+        // Autores Bot API Configuration
+        this.apiKey = "a261c89a87e77c57edfbc8874f1f914b";
+        this.apiUrl = "https://autoresbot.com/api/gpt";
         
         // Storage key untuk localStorage
         this.storageKey = 'ai-chatbot-history';
@@ -105,8 +87,8 @@ class AIChatbot {
 
     // Fungsi untuk mendapatkan konteks percakapan untuk API
     getChatContext() {
-        // Ambil maksimal 5 percakapan terakhir untuk konteks (lebih sedikit untuk API gratis)
-        const maxContext = 5;
+        // Ambil maksimal 10 percakapan terakhir untuk konteks
+        const maxContext = 10;
         const recentHistory = this.chatHistory.slice(-maxContext);
         
         let context = "";
@@ -241,6 +223,20 @@ class AIChatbot {
             }
         });
 
+        // Input character count - REMOVED (unlimited text)
+        // this.userInput.addEventListener("input", () => {
+        //     const length = this.userInput.value.length;
+        //     this.charCount.textContent = `${length}/6000`;
+        //     
+        //     if (length > 5500) {
+        //         this.charCount.style.color = "#ff6b6b";
+        //     } else if (length > 5000) {
+        //         this.charCount.style.color = "#ffa726";
+        //     } else {
+        //         this.charCount.style.color = "#999";
+        //     }
+        // });
+
         // Other controls
         this.clearChatButton.addEventListener("click", () => this.clearChat());
         this.exportChatButton.addEventListener("click", () => this.exportChat());
@@ -303,12 +299,13 @@ class AIChatbot {
 
         this.appendMessage("user", prompt);
         this.userInput.value = "";
+        // Character count removed - unlimited text now
         
         this.showTypingIndicator();
         this.updateStatus("AI sedang berpikir...");
 
         try {
-            const response = await this.callAI(prompt);
+            const response = await this.callAutoresBot(prompt);
             this.hideTypingIndicator();
             this.appendMessage("ai", response);
             this.updateStatus(`Mode: ${this.getModeDisplayName()} | Session: ${this.sessionId.slice(-8)}`);
@@ -325,16 +322,16 @@ class AIChatbot {
             
         } catch (error) {
             this.hideTypingIndicator();
-            console.error("Error calling AI:", error);
+            console.error("Error calling Autores Bot:", error);
             this.appendMessage("ai", "Maaf, terjadi kesalahan saat menghubungi AI. Silakan coba lagi.");
             this.updateStatus("Error terjadi");
         }
     }
 
-    async callAI(userMessage) {
+    async callAutoresBot(userMessage) {
         const mode = this.aiModeSelect.value;
         const systemPrompt = this.getSystemPromptByMode(mode);
-        const chatContext = this.getChatContext();
+        const chatContext = this.getChatContext(); // Dapatkan konteks percakapan sebelumnya
         
         // Gabungkan system prompt, konteks, dan pesan user
         let fullPrompt = systemPrompt;
@@ -343,118 +340,92 @@ class AIChatbot {
         }
         fullPrompt += `\nUser: ${userMessage}`;
         
-        // Fallback ke respons lokal jika API tidak tersedia
-        return this.generateLocalResponse(userMessage, mode);
-    }
-
-    // Generate respons lokal yang cerdas berdasarkan input user
-    generateLocalResponse(userMessage, mode) {
-        const message = userMessage.toLowerCase();
-        
-        // Respons berdasarkan kata kunci
-        if (message.includes('halo') || message.includes('hai') || message.includes('hello')) {
-            const greetings = [
-                "Halo! Senang bertemu dengan Anda. Bagaimana kabar Anda hari ini? 😊",
-                "Hai! Saya di sini untuk membantu. Ada yang bisa saya bantu?",
-                "Hello! Selamat datang di AI Chatbot. Apa yang ingin Anda bicarakan?"
-            ];
-            return greetings[Math.floor(Math.random() * greetings.length)];
-        }
-        
-        if (message.includes('apa kabar') || message.includes('how are you')) {
-            const responses = [
-                "Kabar saya baik, terima kasih! Saya siap membantu Anda kapan saja. Bagaimana dengan Anda?",
-                "Saya baik-baik saja! Senang bisa mengobrol dengan Anda hari ini.",
-                "Alhamdulillah baik! Saya selalu siap untuk membantu dan mengobrol."
-            ];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-        
-        if (message.includes('siapa') || message.includes('who are you')) {
-            return "Saya adalah AI assistant yang dibuat untuk membantu menjawab pertanyaan dan memberikan informasi. Saya di sini untuk membantu Anda dengan berbagai topik!";
-        }
-        
-        if (message.includes('terima kasih') || message.includes('thank you')) {
-            const thanks = [
-                "Sama-sama! Saya senang bisa membantu. Jangan ragu untuk bertanya lagi jika ada yang ingin Anda ketahui.",
-                "Dengan senang hati! Saya selalu siap membantu Anda.",
-                "Tidak masalah! Senang bisa bermanfaat untuk Anda."
-            ];
-            return thanks[Math.floor(Math.random() * thanks.length)];
-        }
-        
-        if (message.includes('nama') || message.includes('name')) {
-            return "Saya adalah AI Chatbot, asisten virtual yang siap membantu Anda. Anda bisa memanggil saya AI atau Bot, terserah Anda! 😊";
-        }
-        
-        if (message.includes('bantuan') || message.includes('help')) {
-            return "Tentu! Saya bisa membantu Anda dengan berbagai hal seperti menjawab pertanyaan, memberikan informasi, atau sekadar mengobrol. Apa yang ingin Anda ketahui?";
-        }
-        
-        if (message.includes('waktu') || message.includes('time')) {
-            const now = new Date();
-            const timeString = now.toLocaleString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            return `Sekarang adalah ${timeString}. Apakah ada yang bisa saya bantu?`;
-        }
-        
-        // Respons berdasarkan mode AI
-        const modeResponses = this.getModeBasedResponse(mode, userMessage);
-        if (modeResponses.length > 0) {
-            return modeResponses[Math.floor(Math.random() * modeResponses.length)];
-        }
-        
-        // Respons default yang bervariasi
-        const defaultResponses = [
-            "Itu pertanyaan yang menarik! Mari kita bahas lebih lanjut.",
-            "Saya memahami apa yang Anda maksud. Bisa Anda jelaskan lebih detail?",
-            "Terima kasih atas pertanyaannya! Saya akan berusaha memberikan jawaban terbaik.",
-            "Wah, topik yang bagus! Saya suka diskusi seperti ini.",
-            "Berdasarkan yang Anda tanyakan, saya rasa ini bisa menjadi topik diskusi yang menarik.",
-            "Saya senang bisa membantu Anda hari ini. Apa lagi yang ingin Anda ketahui?",
-            "Pertanyaan yang bagus! Saya akan coba jelaskan dengan sederhana.",
-            "Izinkan saya memberikan perspektif yang berbeda tentang hal ini."
+        // Try different request formats for Autores Bot API
+        const requestFormats = [
+            // Format 1: key in body with prompt
+            {
+                url: this.apiUrl,
+                body: {
+                    key: this.apiKey,
+                    prompt: fullPrompt
+                }
+            },
+            // Format 2: key in body with message
+            {
+                url: this.apiUrl,
+                body: {
+                    key: this.apiKey,
+                    message: fullPrompt
+                }
+            },
+            // Format 3: key in URL with prompt in body
+            {
+                url: `${this.apiUrl}?key=${this.apiKey}`,
+                body: {
+                    prompt: fullPrompt
+                }
+            },
+            // Format 4: key in URL with message in body
+            {
+                url: `${this.apiUrl}?key=${this.apiKey}`,
+                body: {
+                    message: fullPrompt
+                }
+            },
+            // Format 5: simple text format
+            {
+                url: `${this.apiUrl}?key=${this.apiKey}`,
+                body: {
+                    text: fullPrompt
+                }
+            }
         ];
-        
-        return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-    }
 
-    getModeBasedResponse(mode, userMessage) {
-        const responses = {
-            friendly: [
-                "Hehe, seru banget ngobrol sama kamu! 😄 Ada lagi yang mau dibahas?",
-                "Wah, kamu tuh orangnya asik ya! Cerita lagi dong!",
-                "Aku seneng banget bisa bantuin kamu! Gimana kalau kita lanjut ngobrol?"
-            ],
-            professional: [
-                "Berdasarkan analisis saya, hal tersebut memerlukan pendekatan yang sistematis.",
-                "Saya akan memberikan informasi yang akurat dan terstruktur mengenai topik ini.",
-                "Izinkan saya menyampaikan perspektif profesional terkait hal tersebut."
-            ],
-            creative: [
-                "Wah, ide yang kreatif! Bagaimana kalau kita eksplorasi lebih jauh? 🎨",
-                "Menarik sekali! Saya punya beberapa ide out-of-the-box nih!",
-                "Kreativitas kamu keren! Mari kita brainstorming bareng!"
-            ],
-            casual: [
-                "Santai aja bro! Kita ngobrol santai sambil nongkrong virtual 😎",
-                "Asik nih topiknya! Gue suka banget diskusi kayak gini.",
-                "Chill deh, kita bahas pelan-pelan aja ya!"
-            ],
-            technical: [
-                "Dari perspektif teknis, implementasi ini memerlukan beberapa pertimbangan.",
-                "Mari kita breakdown masalah ini secara sistematis dan analitis.",
-                "Berdasarkan spesifikasi teknis, ada beberapa parameter yang perlu dioptimalkan."
-            ]
-        };
+        for (let i = 0; i < requestFormats.length; i++) {
+            const format = requestFormats[i];
+            try {
+                console.log(`Trying format ${i + 1}:`, format);
+                
+                const response = await fetch(format.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    },
+                    body: JSON.stringify(format.body)
+                });
+
+                console.log(`Format ${i + 1} response status:`, response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`Format ${i + 1} response data:`, data);
+                    
+                    // Try different response field names
+                    if (data.reply) {
+                        return data.reply;
+                    } else if (data.response) {
+                        return data.response;
+                    } else if (data.message) {
+                        return data.message;
+                    } else if (data.text) {
+                        return data.text;
+                    } else if (data.result) {
+                        return data.result;
+                    } else if (data.answer) {
+                        return data.answer;
+                    } else if (typeof data === 'string') {
+                        return data;
+                    }
+                }
+            } catch (error) {
+                console.error(`Format ${i + 1} error:`, error);
+                continue;
+            }
+        }
         
-        return responses[mode] || [];
+        // If all formats fail, throw error
+        throw new Error('All API request formats failed');
     }
 
     getSystemPromptByMode(mode) {
