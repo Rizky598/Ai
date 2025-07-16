@@ -1,4 +1,4 @@
-// AI Chatbot JavaScript dengan Free Public AI API dan Memori Percakapan
+// AI Chatbot JavaScript dengan Google AI API dan Memori Percakapan
 class AIChatbot {
     constructor() {
         this.chatBox = document.getElementById("chat-box");
@@ -16,27 +16,9 @@ class AIChatbot {
         this.chatHistory = [];
         this.isTyping = false;
         
-        // Free AI API Configuration - Using multiple fallback APIs
-        this.apiEndpoints = [
-            {
-                name: "Hugging Face",
-                url: "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
-                headers: {
-                    "Authorization": "Bearer hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // Free tier
-                    "Content-Type": "application/json"
-                },
-                format: "huggingface"
-            },
-            {
-                name: "AI/ML API",
-                url: "https://api.aimlapi.com/chat/completions",
-                headers: {
-                    "Authorization": "Bearer free-trial-key",
-                    "Content-Type": "application/json"
-                },
-                format: "openai"
-            }
-        ];
+        // Google AI API Configuration
+        this.googleAIApiKey = "AIzaSyDS1XSeLKAJ93a4aWBC9knChDzPNnKtw3A";
+        this.apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
         
         // Storage key untuk localStorage
         this.storageKey = 'ai-chatbot-history';
@@ -105,8 +87,8 @@ class AIChatbot {
 
     // Fungsi untuk mendapatkan konteks percakapan untuk API
     getChatContext() {
-        // Ambil maksimal 5 percakapan terakhir untuk konteks (lebih sedikit untuk API gratis)
-        const maxContext = 5;
+        // Ambil maksimal 10 percakapan terakhir untuk konteks
+        const maxContext = 10;
         const recentHistory = this.chatHistory.slice(-maxContext);
         
         let context = "";
@@ -241,6 +223,20 @@ class AIChatbot {
             }
         });
 
+        // Input character count - REMOVED (unlimited text)
+        // this.userInput.addEventListener("input", () => {
+        //     const length = this.userInput.value.length;
+        //     this.charCount.textContent = `${length}/6000`;
+        //     
+        //     if (length > 5500) {
+        //         this.charCount.style.color = "#ff6b6b";
+        //     } else if (length > 5000) {
+        //         this.charCount.style.color = "#ffa726";
+        //     } else {
+        //         this.charCount.style.color = "#999";
+        //     }
+        // });
+
         // Other controls
         this.clearChatButton.addEventListener("click", () => this.clearChat());
         this.exportChatButton.addEventListener("click", () => this.exportChat());
@@ -303,12 +299,13 @@ class AIChatbot {
 
         this.appendMessage("user", prompt);
         this.userInput.value = "";
+        // Character count removed - unlimited text now
         
         this.showTypingIndicator();
         this.updateStatus("AI sedang berpikir...");
 
         try {
-            const response = await this.callAI(prompt);
+            const response = await this.callGoogleAI(prompt);
             this.hideTypingIndicator();
             this.appendMessage("ai", response);
             this.updateStatus(`Mode: ${this.getModeDisplayName()} | Session: ${this.sessionId.slice(-8)}`);
@@ -325,16 +322,16 @@ class AIChatbot {
             
         } catch (error) {
             this.hideTypingIndicator();
-            console.error("Error calling AI:", error);
+            console.error("Error calling Google AI:", error);
             this.appendMessage("ai", "Maaf, terjadi kesalahan saat menghubungi AI. Silakan coba lagi.");
             this.updateStatus("Error terjadi");
         }
     }
 
-    async callAI(userMessage) {
+    async callGoogleAI(userMessage) {
         const mode = this.aiModeSelect.value;
         const systemPrompt = this.getSystemPromptByMode(mode);
-        const chatContext = this.getChatContext();
+        const chatContext = this.getChatContext(); // Dapatkan konteks percakapan sebelumnya
         
         // Gabungkan system prompt, konteks, dan pesan user
         let fullPrompt = systemPrompt;
@@ -343,118 +340,65 @@ class AIChatbot {
         }
         fullPrompt += `\nUser: ${userMessage}`;
         
-        // Fallback ke respons lokal jika API tidak tersedia
-        return this.generateLocalResponse(userMessage, mode);
-    }
-
-    // Generate respons lokal yang cerdas berdasarkan input user
-    generateLocalResponse(userMessage, mode) {
-        const message = userMessage.toLowerCase();
-        
-        // Respons berdasarkan kata kunci
-        if (message.includes('halo') || message.includes('hai') || message.includes('hello')) {
-            const greetings = [
-                "Halo! Senang bertemu dengan Anda. Bagaimana kabar Anda hari ini? 😊",
-                "Hai! Saya di sini untuk membantu. Ada yang bisa saya bantu?",
-                "Hello! Selamat datang di AI Chatbot. Apa yang ingin Anda bicarakan?"
-            ];
-            return greetings[Math.floor(Math.random() * greetings.length)];
-        }
-        
-        if (message.includes('apa kabar') || message.includes('how are you')) {
-            const responses = [
-                "Kabar saya baik, terima kasih! Saya siap membantu Anda kapan saja. Bagaimana dengan Anda?",
-                "Saya baik-baik saja! Senang bisa mengobrol dengan Anda hari ini.",
-                "Alhamdulillah baik! Saya selalu siap untuk membantu dan mengobrol."
-            ];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
-        
-        if (message.includes('siapa') || message.includes('who are you')) {
-            return "Saya adalah AI assistant yang dibuat untuk membantu menjawab pertanyaan dan memberikan informasi. Saya di sini untuk membantu Anda dengan berbagai topik!";
-        }
-        
-        if (message.includes('terima kasih') || message.includes('thank you')) {
-            const thanks = [
-                "Sama-sama! Saya senang bisa membantu. Jangan ragu untuk bertanya lagi jika ada yang ingin Anda ketahui.",
-                "Dengan senang hati! Saya selalu siap membantu Anda.",
-                "Tidak masalah! Senang bisa bermanfaat untuk Anda."
-            ];
-            return thanks[Math.floor(Math.random() * thanks.length)];
-        }
-        
-        if (message.includes('nama') || message.includes('name')) {
-            return "Saya adalah AI Chatbot, asisten virtual yang siap membantu Anda. Anda bisa memanggil saya AI atau Bot, terserah Anda! 😊";
-        }
-        
-        if (message.includes('bantuan') || message.includes('help')) {
-            return "Tentu! Saya bisa membantu Anda dengan berbagai hal seperti menjawab pertanyaan, memberikan informasi, atau sekadar mengobrol. Apa yang ingin Anda ketahui?";
-        }
-        
-        if (message.includes('waktu') || message.includes('time')) {
-            const now = new Date();
-            const timeString = now.toLocaleString('id-ID', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            return `Sekarang adalah ${timeString}. Apakah ada yang bisa saya bantu?`;
-        }
-        
-        // Respons berdasarkan mode AI
-        const modeResponses = this.getModeBasedResponse(mode, userMessage);
-        if (modeResponses.length > 0) {
-            return modeResponses[Math.floor(Math.random() * modeResponses.length)];
-        }
-        
-        // Respons default yang bervariasi
-        const defaultResponses = [
-            "Itu pertanyaan yang menarik! Mari kita bahas lebih lanjut.",
-            "Saya memahami apa yang Anda maksud. Bisa Anda jelaskan lebih detail?",
-            "Terima kasih atas pertanyaannya! Saya akan berusaha memberikan jawaban terbaik.",
-            "Wah, topik yang bagus! Saya suka diskusi seperti ini.",
-            "Berdasarkan yang Anda tanyakan, saya rasa ini bisa menjadi topik diskusi yang menarik.",
-            "Saya senang bisa membantu Anda hari ini. Apa lagi yang ingin Anda ketahui?",
-            "Pertanyaan yang bagus! Saya akan coba jelaskan dengan sederhana.",
-            "Izinkan saya memberikan perspektif yang berbeda tentang hal ini."
-        ];
-        
-        return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-    }
-
-    getModeBasedResponse(mode, userMessage) {
-        const responses = {
-            friendly: [
-                "Hehe, seru banget ngobrol sama kamu! 😄 Ada lagi yang mau dibahas?",
-                "Wah, kamu tuh orangnya asik ya! Cerita lagi dong!",
-                "Aku seneng banget bisa bantuin kamu! Gimana kalau kita lanjut ngobrol?"
-            ],
-            professional: [
-                "Berdasarkan analisis saya, hal tersebut memerlukan pendekatan yang sistematis.",
-                "Saya akan memberikan informasi yang akurat dan terstruktur mengenai topik ini.",
-                "Izinkan saya menyampaikan perspektif profesional terkait hal tersebut."
-            ],
-            creative: [
-                "Wah, ide yang kreatif! Bagaimana kalau kita eksplorasi lebih jauh? 🎨",
-                "Menarik sekali! Saya punya beberapa ide out-of-the-box nih!",
-                "Kreativitas kamu keren! Mari kita brainstorming bareng!"
-            ],
-            casual: [
-                "Santai aja bro! Kita ngobrol santai sambil nongkrong virtual 😎",
-                "Asik nih topiknya! Gue suka banget diskusi kayak gini.",
-                "Chill deh, kita bahas pelan-pelan aja ya!"
-            ],
-            technical: [
-                "Dari perspektif teknis, implementasi ini memerlukan beberapa pertimbangan.",
-                "Mari kita breakdown masalah ini secara sistematis dan analitis.",
-                "Berdasarkan spesifikasi teknis, ada beberapa parameter yang perlu dioptimalkan."
+        const requestBody = {
+            contents: [{
+                parts: [{
+                    text: fullPrompt
+                }]
+            }],
+            generationConfig: {
+                temperature: 0.9, // Increased for more creativity/less deterministic responses
+                topK: 50, // Increased for more diverse responses
+                topP: 0.98, // Increased for more diverse responses
+                maxOutputTokens: 2048, // Increased output length
+            },
+            safetySettings: [
+                {
+                    category: "HARM_CATEGORY_HARASSMENT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_HATE_SPEECH",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                }
             ]
         };
-        
-        return responses[mode] || [];
+
+        try {
+            const response = await fetch(`${this.apiUrl}?key=${this.googleAIApiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data);
+            
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('Invalid response format from Google AI');
+            }
+        } catch (error) {
+            console.error('Detailed API Error:', error);
+            throw error;
+        }
     }
 
     getSystemPromptByMode(mode) {
