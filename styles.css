@@ -66,9 +66,6 @@ body {
     line-height: 1.6;
     position: relative;
     overflow-x: hidden;
-    /* Prevent layout shift on mobile keyboard */
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for better mobile support */
 }
 
 /* Overlay untuk meningkatkan kontras */
@@ -198,6 +195,9 @@ body::before {
     background: rgba(255, 255, 255, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
 }
 
 .mode-selector {
@@ -249,6 +249,9 @@ body::before {
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
+    z-index: 15;
+    pointer-events: auto;
 }
 
 .btn-secondary:hover {
@@ -296,6 +299,8 @@ body::before {
     text-align: center;
     padding: 40px 20px;
     animation: fadeIn 1s ease-out;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .welcome-icon {
@@ -323,6 +328,9 @@ body::before {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
+    padding: 0 10px;
 }
 
 /* Quick Action Buttons */
@@ -338,8 +346,18 @@ body::before {
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     border: none;
+    max-width: 200px;
+    min-width: 150px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
 }
 
 .quick-btn:hover {
@@ -446,9 +464,6 @@ body::before {
     background: rgba(255, 255, 255, 0.1);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
-    /* Prevent input from moving when keyboard appears */
-    position: relative;
-    z-index: 100;
 }
 
 .input-wrapper {
@@ -490,6 +505,9 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 25;
+    pointer-events: auto;
 }
 
 .input-btn:hover {
@@ -511,6 +529,9 @@ body::before {
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
+    position: relative;
+    z-index: 25;
+    pointer-events: auto;
 }
 
 .btn-primary:hover {
@@ -772,12 +793,18 @@ body::before {
     .quick-actions {
         flex-direction: column;
         align-items: center;
+        gap: 12px;
+        padding: 0 20px;
+        max-width: 100%;
     }
     
     .quick-btn {
         width: 100%;
-        max-width: 250px;
+        max-width: 280px;
+        min-width: auto;
         justify-content: center;
+        padding: 14px 20px;
+        font-size: 0.95rem;
     }
     
     .input-wrapper {
@@ -896,5 +923,204 @@ body::before {
         min-height: 44px;
         font-size: 16px; /* Prevents zoom on iOS */
     }
+}
+
+
+
+/* Virtual Keyboard Support */
+@supports (height: 100dvh) {
+    .container {
+        min-height: 100dvh;
+    }
+}
+
+/* Enhanced mobile keyboard handling */
+@media (max-width: 768px) {
+    .input-container {
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 15px;
+        margin: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .input-container.keyboard-active {
+        position: fixed !important;
+        bottom: 10px !important;
+        left: 10px !important;
+        right: 10px !important;
+        z-index: 1001 !important;
+        margin: 0 !important;
+    }
+    
+    .chat-container.keyboard-active {
+        margin-bottom: 100px !important;
+        transition: all 0.3s ease;
+    }
+    
+    /* Prevent body scroll when keyboard is active */
+    body.keyboard-active {
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Ensure input stays visible */
+    #user-input:focus {
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .input-container {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    
+    #user-input {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        -webkit-appearance: none;
+        border-radius: 25px;
+    }
+}
+
+/* Android specific fixes */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .chat-container {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .input-container {
+        position: sticky;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+    }
+}
+
+
+
+/* Input Container */
+.input-container {
+    padding: 20px;
+    background: transparent !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+    border-radius: 0;
+    margin: 0;
+    box-shadow: none;
+    position: relative;
+    z-index: 30;
+    pointer-events: auto;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    background: transparent !important;
+    position: relative;
+    z-index: 35;
+    pointer-events: auto;
+}
+
+#user-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.9) !important;
+    transition: all 0.3s ease;
+    color: #333 !important;
+    position: relative;
+    z-index: 40;
+    pointer-events: auto;
+}
+
+#user-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.input-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+    .input-container {
+        background: transparent !important;
+        border-radius: 0;
+        margin: 0;
+        padding: 15px;
+    }
+    
+    .input-wrapper {
+        background: transparent !important;
+    }
+    
+    #user-input {
+        background: rgba(255, 255, 255, 0.9) !important;
+        font-size: 16px; /* Prevents zoom on iOS */
+        -webkit-appearance: none;
+        -webkit-background-clip: padding-box;
+        background-clip: padding-box;
+    }
+    
+    #user-input:focus {
+        background: rgba(255, 255, 255, 0.95) !important;
+    }
+}
+
+/* Android specific fixes */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    .input-container {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    
+    .input-wrapper {
+        background: transparent !important;
+    }
+    
+    .input-info {
+        background: transparent !important;
+    }
+}
+
+/* Adjust footer styles */
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.footer-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-content p,
+.footer-links a {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-links a:hover {
+    color: #764ba2;
 }
 
