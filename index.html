@@ -2,13 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.6, user-scalable=no, viewport-fit=cover">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="width=device-width, initial-scale=0.6, user-scalable=no">
     <title>AI Chatbot - Asisten Virtual Cerdas</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -129,7 +123,7 @@
 
                 <div class="input-container">
                     <div class="input-wrapper">
-                        <input type="text" id="user-input" placeholder="Ketik pesan Anda di sini..." maxlength="6000" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <input type="text" id="user-input" placeholder="Ketik pesan Anda di sini..." maxlength="500" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <div class="input-actions">
                             <button id="voice-input" class="input-btn" title="Voice Input">
                                 <i class="fas fa-microphone"></i>
@@ -140,8 +134,8 @@
                         </div>
                     </div>
                     <div class="input-info">
-                        <span class="char-count">0/6000</span>
-                        <span class="status" id="status">Siap untuk chat dengan AI sungguhan</span>
+                        <span class="char-count">0/500</span>
+                        <span class="status" id="status">Siap untuk chat</span>
                     </div>
                 </div>
             </div>
@@ -253,78 +247,6 @@
         
         // Initial adjustment
         document.addEventListener("DOMContentLoaded", adjustChatHeight);
-        
-        // Handle virtual keyboard on mobile devices
-        function handleVirtualKeyboard() {
-            const inputContainer = document.querySelector('.input-container');
-            const chatContainer = document.querySelector('.chat-container');
-            const userInput = document.getElementById('user-input');
-            
-            // Store original positions
-            let originalInputBottom = null;
-            let originalChatHeight = null;
-            
-            function adjustForKeyboard() {
-                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-                const windowHeight = window.innerHeight;
-                const keyboardHeight = windowHeight - viewportHeight;
-                
-                if (keyboardHeight > 100) { // Keyboard is visible
-                    if (!originalInputBottom) {
-                        originalInputBottom = inputContainer.style.bottom || '0px';
-                        originalChatHeight = chatContainer.style.height;
-                    }
-                    
-                    // Adjust input container position
-                    inputContainer.style.position = 'fixed';
-                    inputContainer.style.bottom = '10px';
-                    inputContainer.style.left = '10px';
-                    inputContainer.style.right = '10px';
-                    inputContainer.style.zIndex = '1001';
-                    
-                    // Adjust chat container height
-                    const inputHeight = inputContainer.offsetHeight;
-                    const availableHeight = viewportHeight - inputHeight - 20;
-                    chatContainer.style.height = Math.max(availableHeight - 200, 200) + 'px';
-                    chatContainer.style.marginBottom = (inputHeight + 20) + 'px';
-                    
-                } else { // Keyboard is hidden
-                    if (originalInputBottom !== null) {
-                        inputContainer.style.position = '';
-                        inputContainer.style.bottom = originalInputBottom;
-                        inputContainer.style.left = '';
-                        inputContainer.style.right = '';
-                        inputContainer.style.zIndex = '';
-                        
-                        chatContainer.style.height = originalChatHeight || '';
-                        chatContainer.style.marginBottom = '';
-                        
-                        originalInputBottom = null;
-                        originalChatHeight = null;
-                    }
-                }
-            }
-            
-            // Listen for viewport changes (keyboard show/hide)
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', adjustForKeyboard);
-            } else {
-                // Fallback for older browsers
-                window.addEventListener('resize', adjustForKeyboard);
-            }
-            
-            // Handle input focus/blur
-            userInput.addEventListener('focus', () => {
-                setTimeout(adjustForKeyboard, 300);
-            });
-            
-            userInput.addEventListener('blur', () => {
-                setTimeout(adjustForKeyboard, 300);
-            });
-        }
-        
-        // Initialize keyboard handling
-        document.addEventListener("DOMContentLoaded", handleVirtualKeyboard);
     </script>
 </body>
 </html>
