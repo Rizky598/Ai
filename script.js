@@ -1,4 +1,4 @@
-// AI Chatbot JavaScript dengan Google AI API
+// AI Chatbot JavaScript dengan Google AI API dan Memori Percakapan
 class AIChatbot {
     constructor() {
         this.chatBox = document.getElementById("chat-box");
@@ -20,10 +20,83 @@ class AIChatbot {
         this.googleAIApiKey = "AIzaSyDS1XSeLKAJ93a4aWBC9knChDzPNnKtw3A";
         this.apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
         
+        // Storage key untuk localStorage
+        this.storageKey = 'ai-chatbot-history';
+        
         this.initializeEventListeners();
         this.initializeModals();
         this.initializeAudioControl();
+        this.loadChatHistory(); // Load riwayat percakapan saat startup
         this.updateStatus("Siap untuk chat dengan AI sungguhan");
+    }
+
+    // Fungsi untuk menyimpan riwayat percakapan ke localStorage
+    saveChatHistory() {
+        try {
+            const historyData = {
+                sessionId: this.sessionId,
+                lastUpdated: new Date().toISOString(),
+                history: this.chatHistory
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(historyData));
+        } catch (error) {
+            console.error('Error saving chat history:', error);
+        }
+    }
+
+    // Fungsi untuk memuat riwayat percakapan dari localStorage
+    loadChatHistory() {
+        try {
+            const savedData = localStorage.getItem(this.storageKey);
+            if (savedData) {
+                const historyData = JSON.parse(savedData);
+                this.chatHistory = historyData.history || [];
+                
+                // Restore chat messages di UI
+                if (this.chatHistory.length > 0) {
+                    // Hide welcome message
+                    const welcomeMessage = document.querySelector('.welcome-message');
+                    if (welcomeMessage) {
+                        welcomeMessage.style.display = 'none';
+                    }
+                    
+                    // Restore semua pesan
+                    this.chatHistory.forEach(chat => {
+                        this.appendMessage("user", chat.user, chat.timestamp, false);
+                        this.appendMessage("ai", chat.ai, chat.timestamp, false);
+                    });
+                    
+                    this.updateStatus(`Riwayat percakapan dimuat (${this.chatHistory.length} pesan)`);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+            this.chatHistory = [];
+        }
+    }
+
+    // Fungsi untuk menghapus riwayat percakapan dari localStorage
+    clearChatHistory() {
+        try {
+            localStorage.removeItem(this.storageKey);
+            this.chatHistory = [];
+        } catch (error) {
+            console.error('Error clearing chat history:', error);
+        }
+    }
+
+    // Fungsi untuk mendapatkan konteks percakapan untuk API
+    getChatContext() {
+        // Ambil maksimal 10 percakapan terakhir untuk konteks
+        const maxContext = 10;
+        const recentHistory = this.chatHistory.slice(-maxContext);
+        
+        let context = "";
+        recentHistory.forEach(chat => {
+            context += `User: ${chat.user}\nAI: ${chat.ai}\n\n`;
+        });
+        
+        return context;
     }
 
     initializeAudioControl() {
@@ -150,19 +223,19 @@ class AIChatbot {
             }
         });
 
-        // Input character count
-        this.userInput.addEventListener("input", () => {
-            const length = this.userInput.value.length;
-            this.charCount.textContent = `${length}/6000`;
-            
-            if (length > 5500) {
-                this.charCount.style.color = "#ff6b6b";
-            } else if (length > 5000) {
-                this.charCount.style.color = "#ffa726";
-            } else {
-                this.charCount.style.color = "#999";
-            }
-        });
+        // Input character count - REMOVED (unlimited text)
+        // this.userInput.addEventListener("input", () => {
+        //     const length = this.userInput.value.length;
+        //     this.charCount.textContent = `${length}/6000`;
+        //     
+        //     if (length > 5500) {
+        //         this.charCount.style.color = "#ff6b6b";
+        //     } else if (length > 5000) {
+        //         this.charCount.style.color = "#ffa726";
+        //     } else {
+        //         this.charCount.style.color = "#999";
+        //     }
+        // });
 
         // Other controls
         this.clearChatButton.addEventListener("click", () => this.clearChat());
@@ -226,8 +299,7 @@ class AIChatbot {
 
         this.appendMessage("user", prompt);
         this.userInput.value = "";
-        this.charCount.textContent = "0/6000";
-        this.charCount.style.color = "#999";
+        // Character count removed - unlimited text now
         
         this.showTypingIndicator();
         this.updateStatus("AI sedang berpikir...");
@@ -238,13 +310,16 @@ class AIChatbot {
             this.appendMessage("ai", response);
             this.updateStatus(`Mode: ${this.getModeDisplayName()} | Session: ${this.sessionId.slice(-8)}`);
             
-            // Add to chat history
-            this.chatHistory.push({
+            // Add to chat history dan simpan ke localStorage
+            const chatEntry = {
                 user: prompt,
                 ai: response,
                 mode: this.aiModeSelect.value,
                 timestamp: new Date().toISOString()
-            });
+            };
+            this.chatHistory.push(chatEntry);
+            this.saveChatHistory(); // Simpan ke localStorage
+            
         } catch (error) {
             this.hideTypingIndicator();
             console.error("Error calling Google AI:", error);
@@ -256,11 +331,19 @@ class AIChatbot {
     async callGoogleAI(userMessage) {
         const mode = this.aiModeSelect.value;
         const systemPrompt = this.getSystemPromptByMode(mode);
+        const chatContext = this.getChatContext(); // Dapatkan konteks percakapan sebelumnya
+        
+        // Gabungkan system prompt, konteks, dan pesan user
+        let fullPrompt = systemPrompt;
+        if (chatContext) {
+            fullPrompt += `\n\nKonteks percakapan sebelumnya:\n${chatContext}`;
+        }
+        fullPrompt += `\nUser: ${userMessage}`;
         
         const requestBody = {
             contents: [{
                 parts: [{
-                    text: `${systemPrompt}\n\nUser: ${userMessage}`
+                    text: fullPrompt
                 }]
             }],
             generationConfig: {
@@ -320,21 +403,21 @@ class AIChatbot {
 
     getSystemPromptByMode(mode) {
         const prompts = {
-            friendly: "Kamu adalah AI assistant yang sangat ramah dan bersahabat. Selalu gunakan bahasa Indonesia yang hangat dan penuh empati. Gunakan emoji yang sesuai untuk membuat percakapan lebih menyenangkan. Jawab dengan gaya yang santai tapi tetap informatif.",
+            friendly: "Kamu adalah AI assistant yang sangat ramah, bersahabat, dan suka bercanda. Selalu gunakan bahasa Indonesia yang hangat dan penuh empati. Gunakan emoji yang sesuai dan sesekali buat lelucon ringan atau pun yang lucu untuk membuat percakapan lebih menyenangkan. Jawab dengan gaya yang santai tapi tetap informatif. Jangan ragu untuk menambahkan humor yang sehat dan menghibur. Ingat konteks percakapan sebelumnya dan rujuk kembali jika relevan.",
             
-            professional: "Kamu adalah AI assistant profesional yang memberikan jawaban yang terstruktur, akurat, dan formal. Gunakan bahasa Indonesia yang baku dan profesional. Berikan informasi yang komprehensif dan well-organized. Hindari penggunaan emoji dan bahasa casual.",
+            professional: "Kamu adalah AI assistant profesional yang memberikan jawaban yang terstruktur, akurat, dan formal, tapi sesekali bisa menyelipkan humor halus yang sopan. Gunakan bahasa Indonesia yang baku dan profesional. Berikan informasi yang komprehensif dan well-organized. Boleh sesekali menambahkan analogi lucu atau contoh yang menghibur untuk mempermudah pemahaman. Selalu ingat konteks percakapan sebelumnya untuk memberikan jawaban yang konsisten.",
             
-            creative: "Kamu adalah AI assistant yang sangat kreatif dan inovatif. Gunakan bahasa Indonesia yang ekspresif dan penuh imajinasi. Berikan jawaban yang out-of-the-box dan inspiratif. Gunakan analogi, metafora, dan pendekatan kreatif dalam menjelaskan sesuatu. Gunakan emoji kreatif untuk memperkaya respons.",
+            creative: "Kamu adalah AI assistant yang sangat kreatif, inovatif, dan penuh humor! Gunakan bahasa Indonesia yang ekspresif dan penuh imajinasi. Berikan jawaban yang out-of-the-box dan inspiratif dengan sentuhan komedi yang cerdas. Gunakan analogi lucu, metafora kocak, dan pendekatan kreatif yang menghibur dalam menjelaskan sesuatu. Gunakan emoji kreatif dan jangan takut untuk bercanda. Bangun dari ide-ide yang sudah dibahas sebelumnya dengan twist yang menghibur.",
             
-            casual: "Kamu adalah AI assistant yang santai dan gaul. Gunakan bahasa Indonesia yang casual, seperti bahasa anak muda zaman sekarang. Boleh pakai bahasa gaul yang wajar, singkatan, dan gaya bicara yang rileks. Buat suasana percakapan jadi chill dan menyenangkan.",
+            casual: "Kamu adalah AI assistant yang santai, gaul, dan super lucu! Gunakan bahasa Indonesia yang casual, seperti bahasa anak muda zaman sekarang. Boleh pakai bahasa gaul yang wajar, singkatan, dan gaya bicara yang rileks. Buat suasana percakapan jadi chill dan menyenangkan dengan banyak lelucon, meme reference, dan humor yang relate sama anak muda. Jangan lupa bercanda dan bikin ketawa! Ingat topik yang udah dibahas sebelumnya biar nyambung terus.",
             
-            technical: "Kamu adalah AI assistant yang fokus pada aspek teknis dan detail. Gunakan bahasa Indonesia yang presisi dan akurat. Berikan penjelasan yang mendalam, step-by-step, dan berbasis data. Sertakan contoh kode, spesifikasi teknis, atau referensi yang relevan jika diperlukan."
+            technical: "Kamu adalah AI assistant yang fokus pada aspek teknis dan detail, tapi juga punya sense of humor yang kering dan cerdas. Gunakan bahasa Indonesia yang presisi dan akurat. Berikan penjelasan yang mendalam, step-by-step, dan berbasis data, tapi sesekali selipkan joke programmer atau analogi teknis yang lucu. Sertakan contoh kode, spesifikasi teknis, atau referensi yang relevan dengan sentuhan humor geek. Selalu rujuk kembali ke diskusi teknis sebelumnya untuk kontinuitas."
         };
         
         return prompts[mode] || prompts.friendly;
     }
 
-    appendMessage(sender, text) {
+    appendMessage(sender, text, timestamp = null, shouldSave = true) {
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("message", sender);
         
@@ -345,15 +428,17 @@ class AIChatbot {
         const messageInfo = document.createElement("div");
         messageInfo.classList.add("message-info");
         
-        const timestamp = new Date().toLocaleTimeString('id-ID', { 
+        // Gunakan timestamp yang diberikan atau buat yang baru
+        const messageTime = timestamp ? new Date(timestamp) : new Date();
+        const timeString = messageTime.toLocaleTimeString('id-ID', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
         
         if (sender === "user") {
-            messageInfo.innerHTML = `<i class="fas fa-user"></i> ${timestamp}`;
+            messageInfo.innerHTML = `<i class="fas fa-user"></i> ${timeString}`;
         } else {
-            messageInfo.innerHTML = `<i class="fas fa-robot"></i> ${this.getModeDisplayName()} • ${timestamp}`;
+            messageInfo.innerHTML = `<i class="fas fa-robot"></i> ${this.getModeDisplayName()} • ${timeString}`;
         }
         
         messageDiv.appendChild(messageContent);
@@ -379,7 +464,7 @@ class AIChatbot {
     }
 
     clearChat() {
-        if (confirm("Apakah Anda yakin ingin menghapus semua percakapan?")) {
+        if (confirm("Apakah Anda yakin ingin menghapus semua percakapan? Ini akan menghapus riwayat percakapan yang tersimpan.")) {
             this.chatBox.innerHTML = `
                 <div class="welcome-message">
                     <div class="welcome-icon">
@@ -388,10 +473,6 @@ class AIChatbot {
                     <h3>Selamat datang di AI Chatbot!</h3>
                     <p>Saya siap membantu Anda. Silakan ketik pesan untuk memulai percakapan.</p>
                     <div class="quick-actions">
-                        <button class="quick-btn" data-message="Halo, apa kabar?">
-                            <i class="fas fa-hand-wave"></i>
-                            Sapa AI
-                        </button>
                         <button class="quick-btn" data-message="Bisakah kamu membantu saya?">
                             <i class="fas fa-question-circle"></i>
                             Minta Bantuan
@@ -403,8 +484,8 @@ class AIChatbot {
                     </div>
                 </div>
             `;
-            this.chatHistory = [];
-            this.updateStatus("Chat berhasil dihapus");
+            this.clearChatHistory(); // Hapus dari localStorage
+            this.updateStatus("Chat dan riwayat percakapan berhasil dihapus");
         }
     }
 
@@ -434,7 +515,6 @@ class AIChatbot {
 
     simulateVoiceInput() {
         const voiceMessages = [
-            "Halo, apa kabar?",
             "Bisakah kamu membantu saya?",
             "Ceritakan tentang dirimu",
             "Bagaimana cara kerja AI?",
@@ -450,11 +530,12 @@ class AIChatbot {
         const typeInterval = setInterval(() => {
             this.userInput.value += randomMessage[i];
             i++;
-            if (i >= randomMessage.length)     updateStatus(message) {
-        const statusText = `<i class="fas fa-circle" style="color: #4CAF50; font-size: 0.6rem;"></i> ${message}`;
-        if (this.statusDiv) {
-            this.statusDiv.innerHTML = statusText;
-        }
+            if (i >= randomMessage.length) {
+                clearInterval(typeInterval);
+            }
+        }, 50);
+        
+        this.updateStatus("Voice input disimulasikan");
     }
 
     updateInputHeader() {
@@ -486,7 +567,9 @@ function showHelp() {
 // Initialize chatbot when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
     new AIChatbot();
-}); some fun easter eggs
+});
+
+// Add some fun easter eggs
 document.addEventListener('keydown', (e) => {
     // Konami code: ↑↑↓↓←→←→BA
     const konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
