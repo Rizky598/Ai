@@ -17,7 +17,7 @@ class AIChatbot {
         this.isTyping = false;
         
         // Google AI API Configuration
-        this.googleAIApiKey = "AIzaSyDS1XSeLKAJ93a4aWBC9knChDzPNnKtw3A";
+        this.googleAIApiKey = "AIzaSyDhmCzfIJ7YbUpl1m0uIvHuEvt2yf-FC6A";
         this.apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
         
         // Storage key untuk localStorage
