@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - AI Chatbot</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 107, 107, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 1);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24, #feca57, #48dbfb, #ff9ff3);
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .card-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .card-content {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Stats Cards */
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .stat-change.positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .stat-change.negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(72, 219, 251, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px 16px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover .file-upload-label {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Success/Error Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            color: #2ecc71;
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Activity Log */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-title {
+                font-size: 20px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <img src="profile_pic.jpg" alt="Logo" class="logo">
+            <h1 class="header-title">Owner Dashboard</h1>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div>Selamat datang, Owner!</div>
+                <div id="currentTime"></div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="dashboard-grid">
+            <!-- Visitors Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">Pengunjung Website</div>
+                </div>
+                <div class="card-content">
+                    <div class="stat-number" id="visitorCount">1,247</div>
+                    <div class="stat-label">Total Pengunjung</div>
+                    <div class="stat-change positive">+12% dari minggu lalu</div>
+                    <div class="chart-container">
+                        <div>📊 Grafik pengunjung akan ditampilkan di sini</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accuracy Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Akurasi Website</div>
+                </div>
+                <div class="card-content">
+                    <div class="stat-number" id="accuracyRate">94.5%</div>
+                    <div class="stat-label">Tingkat Akurasi</div>
+                    <div class="stat-change positive">+2.3% dari bulan lalu</div>
+                    <div class="chart-container">
+                        <div>📈 Grafik akurasi akan ditampilkan di sini</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Management Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔑</div>
+                    <div class="card-title">Manajemen API</div>
+                </div>
+                <div class="card-content">
+                    <form id="apiForm">
+                        <div class="form-group">
+                            <label for="pinterestApi" class="form-label">Pinterest API URL</label>
+                            <input type="url" id="pinterestApi" class="form-input" 
+                                   placeholder="https://api.vreden.my.id/api/pinterest?query="
+                                   value="https://api.vreden.my.id/api/pinterest?query=">
+                        </div>
+                        <div class="form-group">
+                            <label for="chatbotApi" class="form-label">Chatbot API Key</label>
+                            <input type="text" id="chatbotApi" class="form-input" 
+                                   placeholder="Masukkan API key chatbot">
+                        </div>
+                        <button type="submit" class="btn btn-secondary">Update API</button>
+                        <div class="message" id="apiMessage"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Profile Management Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🖼️</div>
+                    <div class="card-title">Foto Profil</div>
+                </div>
+                <div class="card-content">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="form-label">Foto Profil Saat Ini</label>
+                            <img src="profile_pic.jpg" alt="Current Profile" 
+                                 style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;">
+                        </div>
+                        <div class="form-group">
+                            <div class="file-upload">
+                                <input type="file" id="profilePic" accept="image/*">
+                                <label for="profilePic" class="file-upload-label">
+                                    📁 Pilih foto profil baru
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Update Foto Profil</button>
+                        <div class="message" id="profileMessage"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Background Video Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎬</div>
+                    <div class="card-title">Video Latar Belakang</div>
+                </div>
+                <div class="card-content">
+                    <form id="videoForm">
+                        <div class="form-group">
+                            <label for="videoUrl" class="form-label">URL Video Latar Belakang</label>
+                            <input type="url" id="videoUrl" class="form-input" 
+                                   placeholder="https://example.com/video.mp4">
+                        </div>
+                        <div class="form-group">
+                            <div class="file-upload">
+                                <input type="file" id="videoFile" accept="video/*">
+                                <label for="videoFile" class="file-upload-label">
+                                    🎥 Atau upload video baru
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Update Video</button>
+                        <div class="message" id="videoMessage"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Activity Log Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Log Aktivitas</div>
+                </div>
+                <div class="card-content">
+                    <div id="activityLog">
+                        <div class="activity-item">
+                            <div class="activity-icon">🔄</div>
+                            <div class="activity-content">
+                                <div class="activity-title">API Pinterest diperbarui</div>
+                                <div class="activity-time">2 jam yang lalu</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">👤</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Foto profil diubah</div>
+                                <div class="activity-time">1 hari yang lalu</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📊</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Dashboard diakses</div>
+                                <div class="activity-time">Baru saja</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class OwnerDashboard {
+            constructor() {
+                this.checkAuth();
+                this.initializeEventListeners();
+                this.updateTime();
+                this.loadSettings();
+                this.simulateRealTimeData();
+            }
+
+            checkAuth() {
+                if (sessionStorage.getItem('ownerLoggedIn') !== 'true') {
+                    window.location.href = 'owner-login.html';
+                    return;
+                }
+
+                const loginTime = parseInt(sessionStorage.getItem('loginTime'));
+                const currentTime = Date.now();
+                const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+
+                if (currentTime - loginTime > sessionDuration) {
+                    this.logout();
+                }
+            }
+
+            initializeEventListeners() {
+                // API Form
+                document.getElementById('apiForm').addEventListener('submit', (e) => this.handleApiUpdate(e));
+                
+                // Profile Form
+                document.getElementById('profileForm').addEventListener('submit', (e) => this.handleProfileUpdate(e));
+                
+                // Video Form
+                document.getElementById('videoForm').addEventListener('submit', (e) => this.handleVideoUpdate(e));
+                
+                // File input changes
+                document.getElementById('profilePic').addEventListener('change', (e) => this.previewProfilePic(e));
+            }
+
+            updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('currentTime').textContent = timeString;
+                
+                // Update every minute
+                setTimeout(() => this.updateTime(), 60000);
+            }
+
+            loadSettings() {
+                // Load saved settings from localStorage
+                const savedPinterestApi = localStorage.getItem('pinterestApi');
+                const savedChatbotApi = localStorage.getItem('chatbotApi');
+                const savedVideoUrl = localStorage.getItem('videoUrl');
+
+                if (savedPinterestApi) {
+                    document.getElementById('pinterestApi').value = savedPinterestApi;
+                }
+                if (savedChatbotApi) {
+                    document.getElementById('chatbotApi').value = savedChatbotApi;
+                }
+                if (savedVideoUrl) {
+                    document.getElementById('videoUrl').value = savedVideoUrl;
+                }
+            }
+
+            simulateRealTimeData() {
+                // Simulate real-time visitor count updates
+                setInterval(() => {
+                    const currentCount = parseInt(document.getElementById('visitorCount').textContent.replace(',', ''));
+                    const newCount = currentCount + Math.floor(Math.random() * 3);
+                    document.getElementById('visitorCount').textContent = newCount.toLocaleString();
+                }, 30000); // Update every 30 seconds
+
+                // Simulate accuracy fluctuation
+                setInterval(() => {
+                    const baseAccuracy = 94.5;
+                    const fluctuation = (Math.random() - 0.5) * 2; // ±1%
+                    const newAccuracy = (baseAccuracy + fluctuation).toFixed(1);
+                    document.getElementById('accuracyRate').textContent = newAccuracy + '%';
+                }, 60000); // Update every minute
+            }
+
+            async handleApiUpdate(e) {
+                e.preventDefault();
+                
+                const pinterestApi = document.getElementById('pinterestApi').value;
+                const chatbotApi = document.getElementById('chatbotApi').value;
+                const messageEl = document.getElementById('apiMessage');
+                
+                try {
+                    // Simulate API update
+                    await this.simulateApiCall();
+                    
+                    // Save to localStorage
+                    localStorage.setItem('pinterestApi', pinterestApi);
+                    localStorage.setItem('chatbotApi', chatbotApi);
+                    
+                    this.showMessage(messageEl, 'API berhasil diperbarui!', 'success');
+                    this.addActivityLog('🔄', 'API diperbarui', 'Baru saja');
+                    
+                } catch (error) {
+                    this.showMessage(messageEl, 'Gagal memperbarui API: ' + error.message, 'error');
+                }
+            }
+
+            async handleProfileUpdate(e) {
+                e.preventDefault();
+                
+                const fileInput = document.getElementById('profilePic');
+                const messageEl = document.getElementById('profileMessage');
+                
+                if (!fileInput.files[0]) {
+                    this.showMessage(messageEl, 'Pilih file foto terlebih dahulu!', 'error');
+                    return;
+                }
+                
+                try {
+                    // Simulate file upload
+                    await this.simulateFileUpload();
+                    
+                    this.showMessage(messageEl, 'Foto profil berhasil diperbarui!', 'success');
+                    this.addActivityLog('👤', 'Foto profil diubah', 'Baru saja');
+                    
+                } catch (error) {
+                    this.showMessage(messageEl, 'Gagal memperbarui foto profil: ' + error.message, 'error');
+                }
+            }
+
+            async handleVideoUpdate(e) {
+                e.preventDefault();
+                
+                const videoUrl = document.getElementById('videoUrl').value;
+                const videoFile = document.getElementById('videoFile').files[0];
+                const messageEl = document.getElementById('videoMessage');
+                
+                if (!videoUrl && !videoFile) {
+                    this.showMessage(messageEl, 'Masukkan URL video atau pilih file video!', 'error');
+                    return;
+                }
+                
+                try {
+                    // Simulate video update
+                    await this.simulateApiCall();
+                    
+                    if (videoUrl) {
+                        localStorage.setItem('videoUrl', videoUrl);
+                    }
+                    
+                    this.showMessage(messageEl, 'Video latar belakang berhasil diperbarui!', 'success');
+                    this.addActivityLog('🎬', 'Video latar belakang diubah', 'Baru saja');
+                    
+                } catch (error) {
+                    this.showMessage(messageEl, 'Gagal memperbarui video: ' + error.message, 'error');
+                }
+            }
+
+            previewProfilePic(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.querySelector('#profileForm img');
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            showMessage(element, message, type) {
+                element.textContent = message;
+                element.className = `message ${type}`;
+                element.style.display = 'block';
+                
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+
+            addActivityLog(icon, title, time) {
+                const activityLog = document.getElementById('activityLog');
+                const newActivity = document.createElement('div');
+                newActivity.className = 'activity-item';
+                newActivity.innerHTML = `
+                    <div class="activity-icon">${icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${title}</div>
+                        <div class="activity-time">${time}</div>
+                    </div>
+                `;
+                
+                activityLog.insertBefore(newActivity, activityLog.firstChild);
+                
+                // Keep only last 5 activities
+                const activities = activityLog.children;
+                if (activities.length > 5) {
+                    activityLog.removeChild(activities[activities.length - 1]);
+                }
+            }
+
+            async simulateApiCall() {
+                return new Promise((resolve) => {
+                    setTimeout(resolve, 1000 + Math.random() * 2000);
+                });
+            }
+
+            async simulateFileUpload() {
+                return new Promise((resolve) => {
+                    setTimeout(resolve, 2000 + Math.random() * 3000);
+                });
+            }
+
+            logout() {
+                sessionStorage.removeItem('ownerLoggedIn');
+                sessionStorage.removeItem('loginTime');
+                window.location.href = 'owner-login.html';
+            }
+        }
+
+        // Global logout function
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                const dashboard = new OwnerDashboard();
+                dashboard.logout();
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OwnerDashboard();
+        });
+    </script>
+</body>
+</html>
+

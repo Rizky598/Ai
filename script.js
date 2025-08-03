@@ -26,6 +26,7 @@ class AIChatbot {
         this.initializeEventListeners();
         this.initializeModals();
         this.initializeAudioControl();
+        this.initializeNavigation();
         this.loadChatHistory(); // Load riwayat percakapan saat startup
         this.updateStatus("Siap untuk chat dengan AI sungguhan");
     }
@@ -210,6 +211,32 @@ class AIChatbot {
             
         } else {
             console.error('Audio toggle button or background video not found');
+        }
+    }
+
+    initializeNavigation() {
+        const navToggle = document.getElementById('nav-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        const navClose = document.getElementById('nav-close');
+        
+        if (navToggle && navMenu && navClose) {
+            navToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                navToggle.classList.toggle('active');
+            });
+            
+            navClose.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                navToggle.classList.remove('active');
+            });
+            
+            // Close navigation when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+                    navMenu.classList.remove('active');
+                    navToggle.classList.remove('active');
+                }
+            });
         }
     }
 
@@ -598,4 +625,93 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+
+
+// Gallery functionality
+function showGallery() {
+    const modal = document.getElementById('gallery-modal');
+    modal.style.display = 'block';
+    loadGalleryImages();
+}
+
+function loadGalleryImages() {
+    const galleryScroll = document.getElementById('gallery-scroll');
+    
+    // Array gambar yang akan ditampilkan
+    const images = [
+        'https://files.catbox.moe/u5rv9k.jpg',
+        'https://files.catbox.moe/gizi7p.jpg',
+        'https://files.catbox.moe/en6nl2.png',
+        'https://files.catbox.moe/ejw9jq.jpg',
+        'https://files.catbox.moe/d3dquy.jpg',
+        'https://files.catbox.moe/7cs70u.jpg',
+        'https://files.catbox.moe/amcwrg.jpg'
+    ];
+    
+    // Clear existing content
+    galleryScroll.innerHTML = '';
+    
+    // Add images to gallery
+    images.forEach((imagePath, index) => {
+        const galleryItem = document.createElement('div');
+        galleryItem.className = 'gallery-item';
+        
+        const img = document.createElement('img');
+        img.src = imagePath;
+        img.alt = `Gallery Image ${index + 1}`;
+        img.onerror = function() {
+            // Jika gambar tidak ditemukan, gunakan placeholder
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlICcgKyAoaW5kZXggKyAxKSArICc8L3RleHQ+PC9zdmc+';
+        };
+        
+        galleryItem.appendChild(img);
+        galleryScroll.appendChild(galleryItem);
+    });
+    
+    // Initialize gallery controls
+    initializeGalleryControls();
+}
+
+function initializeGalleryControls() {
+    const galleryScroll = document.getElementById('gallery-scroll');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    prevBtn.addEventListener('click', () => {
+        galleryScroll.scrollBy({
+            left: -300,
+            behavior: 'smooth'
+        });
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        galleryScroll.scrollBy({
+            left: 300,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// Update modal close functionality to include gallery modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Existing modal close functionality
+    const modals = document.querySelectorAll('.modal');
+    const closeButtons = document.querySelectorAll('.close');
+    
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            modal.style.display = 'none';
+        });
+    });
+    
+    window.addEventListener('click', function(event) {
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+});
 

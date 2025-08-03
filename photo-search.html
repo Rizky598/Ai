@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.4, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <title>Photo Search - Pencarian Foto Pinterest</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="photo-search.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- PWA Meta Tags untuk Android -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Photo Search">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Photo Search - Pencarian Foto Pinterest">
+    <meta property="og:description" content="Cari dan simpan foto dari Pinterest dengan mudah. Fitur pencarian foto yang powerful dan user-friendly.">
+    <meta property="og:image" content="https://files.catbox.moe/nbws80.jpg">
+    <meta property="og:url" content="https://rizky598.github.io/Ai">
+    <meta property="og:type" content="website">
+    
+    <!-- Prevent zoom on input focus for iOS -->
+    <meta name="format-detection" content="telephone=no">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <!-- Video Background -->
+    <video id="background-video" autoplay muted loop playsinline>
+        <source src="https://files.catbox.moe/iyc9k6.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Navigation Toggle Button -->
+    <div class="nav-toggle" id="nav-toggle">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="nav-menu" id="nav-menu">
+        <div class="nav-content">
+            <div class="nav-header">
+                <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+                <button class="nav-close" id="nav-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-comments"></i>
+                    <span>AI Chatbot</span>
+                </a>
+                <a href="photo-search.html" class="nav-link active">
+                    <i class="fas fa-search"></i>
+                    <span>Pencarian Foto</span>
+                </a>
+                <a href="owner-login.html" class="nav-link">
+                    <i class="fas fa-crown"></i>
+                    <span>Owner Panel</span>
+                </a>
+            </div>
+            <div class="nav-footer">
+                <div class="quick-links">
+                    <a href="https://chat.whatsapp.com/Jmbs0K52j3fB4FOP5wViWX" target="_blank" class="quick-link">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Grup WhatsApp</span>
+                    </a>
+                    <a href="https://wa.me/6283850540570" target="_blank" class="quick-link">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Chat Admin</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Control Button -->
+    <button id="audio-toggle" class="audio-control" title="Toggle Audio">
+        <i class="fas fa-volume-mute"></i>
+    </button>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="profile-pic">
+                        <img src="profile_pic.jpg" alt="Profile Picture">
+                    </div>
+                    <div class="logo-text">
+                        <i class="fas fa-search"></i>
+                        <h1>Photo Search</h1>
+                    </div>
+                </div>
+                <div class="header-subtitle">
+                    Cari dan Simpan Foto dari Pinterest
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="search-container">
+                <div class="search-header">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="search-input" placeholder="Cari foto di Pinterest..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <button id="search-button" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-info">
+                        <span class="status" id="search-status">Masukkan kata kunci untuk mencari foto</span>
+                    </div>
+                </div>
+
+                <div class="search-results" id="search-results">
+                    <div class="welcome-search">
+                        <div class="welcome-icon">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <h3>Selamat datang di Photo Search!</h3>
+                        <p>Cari foto favorit Anda dari Pinterest dan simpan dengan mudah.</p>
+                        <div class="search-suggestions">
+                            <h4>Saran pencarian populer:</h4>
+                            <div class="suggestion-tags">
+                                <button class="suggestion-tag" data-query="nature">Alam</button>
+                                <button class="suggestion-tag" data-query="food">Makanan</button>
+                                <button class="suggestion-tag" data-query="travel">Travel</button>
+                                <button class="suggestion-tag" data-query="art">Seni</button>
+                                <button class="suggestion-tag" data-query="fashion">Fashion</button>
+                                <button class="suggestion-tag" data-query="architecture">Arsitektur</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loading-indicator" id="loading-indicator">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                    <span class="loading-text">Mencari foto...</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Photo Search. Dibuat dengan ❤️ untuk pencarian foto yang mudah</p>
+                <div class="footer-links">
+                    <a href="#" onclick="showAbout()">Tentang</a>
+                    <a href="#" onclick="showHelp()">Bantuan</a>
+                    <a href="https://github.com/Rizky598" target="_blank">GitHub</a>
+                    <a href="index.html">Kembali ke Chatbot</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal untuk About -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-search"></i> Tentang Photo Search</h2>
+            <p>Photo Search adalah fitur pencarian foto yang terintegrasi dengan Pinterest API. Anda dapat mencari foto berdasarkan kata kunci dan menyimpannya dengan mudah.</p>
+            <h3>Fitur:</h3>
+            <ul>
+                <li>Pencarian foto real-time dari Pinterest</li>
+                <li>Tampilan grid yang responsif</li>
+                <li>Download foto dengan satu klik</li>
+                <li>Simpan URL foto untuk referensi</li>
+                <li>Interface yang user-friendly</li>
+                <li>Optimized untuk mobile dan desktop</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal untuk Help -->
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-question-circle"></i> Bantuan Photo Search</h2>
+            <h3>Cara Menggunakan:</h3>
+            <ol>
+                <li>Masukkan kata kunci pencarian di kolom search</li>
+                <li>Tekan Enter atau klik tombol search</li>
+                <li>Browse hasil pencarian dalam grid layout</li>
+                <li>Klik foto untuk melihat detail dan opsi download</li>
+                <li>Gunakan tombol download untuk menyimpan foto</li>
+            </ol>
+            <h3>Tips Pencarian:</h3>
+            <ul>
+                <li>Gunakan kata kunci spesifik untuk hasil yang lebih akurat</li>
+                <li>Coba variasi kata kunci jika hasil tidak sesuai</li>
+                <li>Gunakan bahasa Inggris untuk hasil yang lebih banyak</li>
+                <li>Kombinasikan beberapa kata untuk pencarian yang lebih spesifik</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal untuk Photo Detail -->
+    <div id="photo-modal" class="modal photo-modal">
+        <div class="modal-content photo-modal-content">
+            <span class="close">&times;</span>
+            <div class="photo-detail">
+                <div class="photo-image-container">
+                    <img id="modal-photo" src="" alt="Photo">
+                </div>
+                <div class="photo-actions">
+                    <button id="download-photo" class="btn-primary">
+                        <i class="fas fa-download"></i>
+                        Download Foto
+                    </button>
+                    <button id="copy-url" class="btn-secondary">
+                        <i class="fas fa-copy"></i>
+                        Copy URL
+                    </button>
+                </div>
+                <div class="photo-info">
+                    <p id="photo-url"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="photo-search.js"></script>
+    
+    <!-- Additional mobile optimizations -->
+    <script>
+        // Prevent zoom on double tap for iOS
+        let lastTouchEnd = 0;
+        document.addEventListener("touchend", function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Prevent pull-to-refresh on mobile
+        document.body.addEventListener("touchstart", e => {
+            if (e.touches.length === 1 && e.touches[0].clientY <= 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.body.addEventListener("touchmove", e => {
+            if (e.touches.length === 1 && e.touches[0].clientY <= 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
+

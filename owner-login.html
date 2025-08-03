@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Login - AI Chatbot</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="a" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,0.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="20" cy="20" r="2" fill="url(%23a)"><animate attributeName="cy" values="20;80;20" dur="3s" repeatCount="indefinite"/></circle><circle cx="50" cy="50" r="1.5" fill="url(%23a)"><animate attributeName="cy" values="50;10;50" dur="4s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="2.5" fill="url(%23a)"><animate attributeName="cy" values="30;90;30" dur="5s" repeatCount="indefinite"/></circle></svg>') repeat;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: block;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(238, 90, 36, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            color: #ff6b6b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .back-link a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px 25px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+        }
+
+        /* Security indicator */
+        .security-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="security-badge">🔒 SECURE</div>
+        
+        <div class="logo-container">
+            <img src="profile_pic.jpg" alt="Logo" class="logo">
+            <h1 class="title">Owner Access</h1>
+            <p class="subtitle">Masukkan password untuk mengakses dashboard owner</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Masukkan password owner"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span id="btnText">Masuk ke Dashboard</span>
+                <div class="loading" id="loading"></div>
+            </button>
+
+            <div class="error-message" id="errorMessage">
+                Password salah! Silakan coba lagi.
+            </div>
+        </form>
+
+        <div class="back-link">
+            <a href="index.html">← Kembali ke Chatbot</a>
+        </div>
+    </div>
+
+    <script>
+        class OwnerLogin {
+            constructor() {
+                this.passwordApiUrl = 'https://rizky598.github.io/api/password.json';
+                this.correctPassword = null;
+                this.initializeEventListeners();
+                this.fetchPassword();
+            }
+
+            async fetchPassword() {
+                try {
+                    const response = await fetch(this.passwordApiUrl);
+                    const data = await response.json();
+                    this.correctPassword = data.password;
+                    console.log('Password loaded successfully');
+                } catch (error) {
+                    console.error('Error fetching password:', error);
+                    // Fallback password jika API tidak tersedia
+                    this.correctPassword = 'RizkyGPT1';
+                }
+            }
+
+            initializeEventListeners() {
+                const loginForm = document.getElementById('loginForm');
+                const passwordInput = document.getElementById('password');
+
+                loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                
+                // Enter key support
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.handleLogin(e);
+                    }
+                });
+
+                // Clear error on input
+                passwordInput.addEventListener('input', () => {
+                    this.hideError();
+                });
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                
+                const passwordInput = document.getElementById('password');
+                const loginBtn = document.getElementById('loginBtn');
+                const btnText = document.getElementById('btnText');
+                const loading = document.getElementById('loading');
+                
+                const enteredPassword = passwordInput.value.trim();
+                
+                if (!enteredPassword) {
+                    this.showError('Password tidak boleh kosong!');
+                    return;
+                }
+
+                // Show loading state
+                this.setLoadingState(true);
+                
+                // Simulate API check delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (enteredPassword === this.correctPassword) {
+                    // Success - redirect to dashboard
+                    this.showSuccess();
+                    setTimeout(() => {
+                        // Store login session
+                        sessionStorage.setItem('ownerLoggedIn', 'true');
+                        sessionStorage.setItem('loginTime', Date.now().toString());
+                        window.location.href = 'owner-dashboard.html';
+                    }, 1500);
+                } else {
+                    // Error - wrong password
+                    this.showError('Password salah! Silakan coba lagi.');
+                    this.setLoadingState(false);
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+
+            setLoadingState(isLoading) {
+                const btnText = document.getElementById('btnText');
+                const loading = document.getElementById('loading');
+                const loginBtn = document.getElementById('loginBtn');
+                
+                if (isLoading) {
+                    btnText.style.display = 'none';
+                    loading.style.display = 'block';
+                    loginBtn.disabled = true;
+                    loginBtn.style.opacity = '0.7';
+                } else {
+                    btnText.style.display = 'block';
+                    loading.style.display = 'none';
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                }
+            }
+
+            showError(message) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    this.hideError();
+                }, 5000);
+            }
+
+            hideError() {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.style.display = 'none';
+            }
+
+            showSuccess() {
+                const loginBtn = document.getElementById('loginBtn');
+                const btnText = document.getElementById('btnText');
+                const loading = document.getElementById('loading');
+                
+                loading.style.display = 'none';
+                btnText.textContent = '✓ Login Berhasil!';
+                btnText.style.display = 'block';
+                loginBtn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+            }
+        }
+
+        // Initialize login system when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OwnerLogin();
+        });
+
+        // Check if already logged in
+        if (sessionStorage.getItem('ownerLoggedIn') === 'true') {
+            const loginTime = parseInt(sessionStorage.getItem('loginTime'));
+            const currentTime = Date.now();
+            const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours
+            
+            if (currentTime - loginTime < sessionDuration) {
+                // Still logged in, redirect to dashboard
+                window.location.href = 'owner-dashboard.html';
+            } else {
+                // Session expired
+                sessionStorage.removeItem('ownerLoggedIn');
+                sessionStorage.removeItem('loginTime');
+            }
+        }
+    </script>
+</body>
+</html>
+
