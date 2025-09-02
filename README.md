@@ -29,7 +29,7 @@ Sebuah website AI Chatbot yang interaktif dan responsif, dibuat menggunakan HTML
 Website ini menggunakan Google AI API. API Key sudah dikonfigurasi dalam file `script.js`:
 
 ```javascript
-this.googleAIApiKey = "AIzaSyDS1XSeLKAJ93a4aWBC9knChDzPNnKtw3A";
+this.googleAIApiKey = "AIzaSyBmdFvEobyMBRttJhfBcKyL62YwxY5aHXY";
 ```
 
 **⚠️ Catatan Keamanan:**
